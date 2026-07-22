@@ -14,6 +14,7 @@ export function PDFExport() {
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: 'cv',
+    preserveAfterPrint: true,
    pageStyle: `
 @page{
   size:A4;
@@ -70,17 +71,19 @@ body > *{
   id="cv-print-area"
   ref={printRef}
   style={{
-    position:'fixed',
-    left:'-99999px',
-    top:0,
-    width:'210mm',
-    minHeight:'297mm',
-    background:'#fff',
-    overflow:'hidden'
+    position: 'absolute',
+    left: '-10000px',
+    top: 0,
+    width: '210mm',
+    minHeight: '297mm',
+    height: 'auto',
+    background: '#fff',
+    overflow: 'visible',
+    pointerEvents: 'none',
   }}
 >
-        {template === 'modern' ? <ModernTemplate /> : <MinimalTemplate />}
-      </div>
+  {template === 'modern' ? <ModernTemplate /> : <MinimalTemplate />}
+</div>
     </>
   )
 }
