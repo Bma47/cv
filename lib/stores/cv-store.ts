@@ -111,7 +111,7 @@ interface CVState {
     theme_settings: ThemeSettings
     photo_url?: string | null
     background_url?: string | null
-  }) => void
+  }, displayLanguage?: CVLanguage) => void
 
   resetCV: (language?: CVLanguage) => void
 }
@@ -144,14 +144,18 @@ export const useCVStore = create<CVState>((set) => ({
   setTitle: (title) => set({ title, isDirty: true }),
 
   setLanguage: (language) =>
-    set((state) => ({
-      language,
-      title:
-        state.title === 'سيرتي الذاتية' || state.title === 'My Resume'
-          ? getDefaultTitle(language)
-          : state.title,
-      isDirty: true,
-    })),
+    set((state) => {
+      if (state.language === language) return state
+
+      return {
+        language,
+        title:
+          state.title === 'سيرتي الذاتية' || state.title === 'My Resume'
+            ? getDefaultTitle(language)
+            : state.title,
+        isDirty: true,
+      }
+    }),
 
   setTemplate: (template) => set({ template, isDirty: true }),
   setActiveSection: (section) => set({ activeSection: section }),
@@ -392,18 +396,25 @@ export const useCVStore = create<CVState>((set) => ({
       isDirty: true,
     })),
 
-  loadCV: (cv) =>
+  loadCV: (cv, displayLanguage) => {
+    const language = displayLanguage ?? cv.language ?? 'ar'
+    const title =
+      cv.title === 'سيرتي الذاتية' || cv.title === 'My Resume'
+        ? getDefaultTitle(language)
+        : cv.title
+
     set({
       cvId: cv.id,
-      title: cv.title,
-      language: cv.language ?? 'ar',
+      title,
+      language,
       template: cv.template,
       data: cv.data,
       themeSettings: cv.theme_settings,
       photoUrl: cv.photo_url || null,
       backgroundUrl: cv.background_url || null,
-      isDirty: false,
-    }),
+      isDirty: language !== (cv.language ?? 'ar') || title !== cv.title,
+    })
+  },
 
   resetCV: (language = 'ar') =>
     set({

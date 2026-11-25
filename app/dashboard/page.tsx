@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { query } from '@/lib/db'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -20,20 +21,16 @@ export default async function DashboardPage({
   const lang = params.lang === 'en' ? 'en' : 'ar'
   const isEn = lang === 'en'
 
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     redirect(`/auth/login?lang=${lang}`)
   }
 
-  const { data: cvs } = await supabase
-    .from('cvs')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false })
+  const { rows: cvs } = await query(
+    'SELECT * FROM cvs WHERE user_id = ? ORDER BY updated_at DESC',
+    [user.id],
+  )
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(

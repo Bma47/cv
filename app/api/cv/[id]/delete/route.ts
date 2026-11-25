@@ -1,23 +1,15 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+import { query } from '@/lib/db'
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const user = await getCurrentUser()
+  if (!user) redirect('/auth/login')
+
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect('/auth/login')
-  }
-
-  await supabase
-    .from('cvs')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user.id)
-
+  await query('DELETE FROM cvs WHERE id = ? AND user_id = ?', [id, user.id])
   redirect('/dashboard')
 }

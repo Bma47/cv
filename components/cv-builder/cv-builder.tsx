@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCVStore } from '@/lib/stores/cv-store'
-import { createClient } from '@/lib/supabase/client'
 import { SectionNav } from './section-nav'
 import { SectionContent } from './section-content'
 import { CVPreview } from './cv-preview'
@@ -45,7 +44,6 @@ export function CVBuilder({
   language = 'ar',
 }: CVBuilderProps) {
   const router = useRouter()
-  const supabase = createClient()
 
   const [activeTab, setActiveTab] = useState<
     'edit' | 'preview' | 'settings'
@@ -68,17 +66,14 @@ export function CVBuilder({
     isSaving,
     setIsSaving,
     setIsDirty,
+    cvId: currentCvId,
     loadCV,
     setCvId,
+    setLanguage,
+    resetCV,
   } = useCVStore()
 
-  useEffect(() => {
-    if (cvId) {
-      loadExistingCV(cvId)
-    }
-  }, [cvId])
-
-  const loadExistingCV = async (id: string) => {
+  const loadExistingCV = useCallback(async (id: string) => {
     try {
       const response = await fetch(`/api/cv/${id}`)
 
@@ -89,13 +84,23 @@ export function CVBuilder({
 
       const { cv } = await response.json()
 
-      loadCV(cv)
+      loadCV(cv, language)
     } catch (error) {
       console.error('Error loading CV:', error)
 
       router.push(`/builder?lang=${language}`)
     }
-  }
+  }, [language, loadCV, router])
+
+  useEffect(() => {
+    if (cvId) void loadExistingCV(cvId)
+  }, [cvId, loadExistingCV])
+
+  useEffect(() => {
+    if (cvId) return
+    if (currentCvId) resetCV(language)
+    else setLanguage(language)
+  }, [cvId, currentCvId, language, resetCV, setLanguage])
 
   const handleSave = useCallback(async () => {
     setIsSaving(true)
@@ -169,8 +174,7 @@ export function CVBuilder({
   ])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-
+    await fetch('/api/auth/signout', { method: 'POST' })
     router.push(`/auth/login?lang=${language}`)
     router.refresh()
   }
@@ -389,7 +393,7 @@ export function CVBuilder({
           </div>
 
           {/* Desktop Preview */}
-          <div className="hidden lg:flex flex-col w-[420px] bg-muted/30 border-l">
+          <div className="hidden lg:flex flex-col w-[794px] bg-muted/30 border-l">
             <div className="flex-1 overflow-y-auto p-4">
               <div className="transform scale-[0.45] origin-top">
                 <CVPreview />

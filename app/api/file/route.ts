@@ -1,57 +1,49 @@
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 import { type NextRequest, NextResponse } from 'next/server'
-import { get } from '@vercel/blob'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/session'
+
+const uploadRoot = process.env.CV_UPLOAD_DIR ?? path.join(process.cwd(), 'storage', 'uploads')
+const fileTypes: Record<string, string> = {
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
+    const user = await getCurrentUser()
+    if (!user) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
 
     const pathname = request.nextUrl.searchParams.get('pathname')
-
-    if (!pathname) {
-      return NextResponse.json({ error: 'المسار مطلوب' }, { status: 400 })
-    }
-
-    // Security: Ensure user can only access their own files
-    if (!pathname.includes(user.id)) {
+    const parts = pathname?.split('/') ?? []
+    if (parts.length !== 2 || parts[0] !== user.id || !/^[0-9a-f-]+\.(jpg|png|webp)$/.test(parts[1])) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     }
 
-    const result = await get(pathname, {
-      access: 'private',
-      ifNoneMatch: request.headers.get('if-none-match') ?? undefined,
-    })
-
-    if (!result) {
-      return new NextResponse('الملف غير موجود', { status: 404 })
+    const filePath = path.resolve(uploadRoot, parts[0], parts[1])
+    const userPath = `${path.resolve(uploadRoot, parts[0])}${path.sep}`
+    if (!filePath.startsWith(userPath)) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
     }
 
-    // Blob hasn't changed — tell the browser to use its cached copy
-    if (result.statusCode === 304) {
-      return new NextResponse(null, {
-        status: 304,
-        headers: {
-          ETag: result.blob.etag,
-          'Cache-Control': 'private, no-cache',
-        },
-      })
+    const file = await readFile(filePath)
+    const etag = `"${createHash('sha256').update(file).digest('hex')}"`
+    const headers = {
+      'Content-Type': fileTypes[parts[1].split('.').pop() ?? ''] ?? 'application/octet-stream',
+      ETag: etag,
+      'Cache-Control': 'private, no-cache',
     }
 
-    return new NextResponse(result.stream, {
-      headers: {
-        'Content-Type': result.blob.contentType,
-        ETag: result.blob.etag,
-        'Cache-Control': 'private, no-cache',
-      },
-    })
+    if (request.headers.get('if-none-match') === etag) {
+      return new NextResponse(null, { status: 304, headers })
+    }
+    return new NextResponse(file, { headers })
   } catch (error) {
-    console.error('Error serving file:', error)
-    return NextResponse.json({ error: 'فشل في تحميل الملف' }, { status: 500 })
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('Error serving file:', error)
+    }
+    return NextResponse.json({ error: 'الملف غير موجود' }, { status: 404 })
   }
 }

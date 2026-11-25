@@ -3,7 +3,6 @@
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,8 +28,6 @@ function SignUpContent() {
 
   const lang = searchParams.get('lang') === 'en' ? 'en' : 'ar'
   const isEn = lang === 'en'
-
-  const supabase = createClient()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,29 +57,30 @@ function SignUpContent() {
       return
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
 
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/builder?lang=${lang}`,
-      },
-    })
+      if (!response.ok) {
+        const isDuplicate = response.status === 409
+        setError(isEn
+          ? (isDuplicate ? 'This email is already registered' : 'An error occurred while creating the account')
+          : (isDuplicate ? 'هذا البريد الإلكتروني مسجل بالفعل' : 'حدث خطأ أثناء إنشاء الحساب'))
+        setIsLoading(false)
+        return
+      }
 
-    if (error) {
-      setError(
-        isEn
-          ? 'An error occurred while creating the account'
-          : 'حدث خطأ أثناء إنشاء الحساب'
-      )
-
+      router.push(`/dashboard?lang=${lang}`)
+      router.refresh()
+    } catch {
+      setError(isEn
+        ? 'Could not connect to the local database'
+        : 'تعذر الاتصال بقاعدة البيانات المحلية')
       setIsLoading(false)
-      return
     }
-
-    router.push(
-      `/auth/verify?email=${encodeURIComponent(email)}&lang=${lang}`
-    )
   }
 
   return (

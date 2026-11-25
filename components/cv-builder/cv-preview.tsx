@@ -14,10 +14,13 @@ export function CVPreview({ printMode = false }: CVPreviewProps) {
     return (
       <div
         style={{
-          width: '794px',
-          minHeight: '1123px',
+          width: '210mm',
+          minWidth: '210mm',
+          maxWidth: '210mm',
+          minHeight: '297mm',
+          boxSizing: 'border-box',
           background: '#ffffff',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         {template === 'modern' ? <ModernTemplate /> : <MinimalTemplate />}

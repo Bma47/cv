@@ -5,6 +5,6 @@ export default function robots() {
       allow: '/',
       disallow: ['/dashboard', '/builder', '/auth'],
     },
-    sitemap: 'https://servicecv.edu-web.fr/sitemap.xml',
+    sitemap: 'https://cv.logicstack.tech/sitemap.xml',
   }
 }

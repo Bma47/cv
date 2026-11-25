@@ -37,6 +37,7 @@ const almarai = Almarai({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://cv.logicstack.tech'),
   title: 'بناء السيرة الذاتية | CV Builder',
  description:
     'منصة مجانية لإنشاء سيرة ذاتية احترافية باللغة العربية والإنجليزية، مقدمة من مؤسسة نخلة لتنمية ورعاية الأمومة والطفولة.',
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'منصة بناء السيرة الذاتية',
     description: 'أنشئ سيرتك الذاتية بالعربية أو الإنجليزية خلال دقائق.',
-    url: 'https://servicecv.edu-web.fr',
+    url: 'https://cv.logicstack.tech',
     siteName: 'CV Builder',
     images: ['/opengraph-image.png'],
     locale: 'ar_AR',
@@ -83,12 +84,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    // Chrome Cast may add __gcrremoteframetoken to <html> before hydration.
     <html 
       lang="ar" 
       dir="rtl"
       className={`${notoKufiArabic.variable} ${tajawal.variable} ${cairo.variable} ${amiri.variable} ${almarai.variable}`}
+      suppressHydrationWarning
     >
-      <body className="font-sans antialiased bg-background">
+      <body className="font-sans antialiased bg-background" suppressHydrationWarning>
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

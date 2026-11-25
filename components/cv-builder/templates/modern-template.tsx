@@ -3,6 +3,7 @@
 import { useCVStore } from '@/lib/stores/cv-store'
 import { useSearchParams } from 'next/navigation'
 import { Mail, Phone, MapPin, Globe, Linkedin } from 'lucide-react'
+import { getCVFontFamily } from './font-family'
 
 function formatDate(dateString?: string, isEn = false) {
   if (!dateString || !dateString.includes('-')) return ''
@@ -63,7 +64,7 @@ const t = {
       case 'experiences':
         if (experiences.length === 0) return null
         return (
-          <div key="experiences" className="mb-6">
+          <div key="experiences" data-pdf-section className="mb-6">
             <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.experiences}
             </h2>
@@ -90,7 +91,7 @@ const t = {
       case 'education':
         if (education.length === 0) return null
         return (
-          <div key="education" className="mb-6">
+          <div key="education" data-pdf-section className="mb-6">
             <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.education}
             </h2>
@@ -117,7 +118,7 @@ const t = {
       case 'projects':
         if (projects.length === 0) return null
         return (
-          <div key="projects" className="mb-6">
+          <div key="projects" data-pdf-section className="mb-6">
             <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
               {t.projects}
 
@@ -156,10 +157,13 @@ const t = {
   const sidebarSections = ['skills', 'languages', 'certificates']
 
   return (
-    <div 
-      className="w-full min-h-[297mm] bg-white text-gray-900 shadow-lg"
+    <div
+      lang={isEn ? 'en' : 'ar'}
+      dir={isEn ? 'ltr' : 'rtl'}
+      className="cv-template cv-template-modern w-full min-h-[297mm] bg-white text-gray-900 shadow-lg"
       style={{ 
-        fontFamily: themeSettings.fontFamily,
+        fontFamily: getCVFontFamily(themeSettings.fontFamily),
+        direction: isEn ? 'ltr' : 'rtl',
         backgroundColor: themeSettings.backgroundColor,
       }}
     >
@@ -226,7 +230,7 @@ const t = {
         <div className="flex-1 p-6">
           {/* Summary */}
           {personalInfo.summary && (
-            <div className="mb-6">
+            <div data-pdf-section className="mb-6">
               <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.summary}
               </h2>
@@ -242,7 +246,7 @@ const t = {
         <div className="w-64 p-6 bg-gray-50 border-r border-gray-200">
           {/* Skills */}
           {skills.length > 0 && (
-            <div className="mb-6">
+            <div data-pdf-section className="mb-6">
               <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.skills}
               </h2>
@@ -261,7 +265,7 @@ const t = {
 
           {/* Languages */}
           {languages.length > 0 && (
-            <div className="mb-6">
+            <div data-pdf-section className="mb-6">
               <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.languages}
               </h2>
@@ -280,7 +284,7 @@ const t = {
 
           {/* Certificates */}
           {certificates.length > 0 && (
-            <div className="mb-6">
+            <div data-pdf-section className="mb-6">
               <h2 className="text-lg font-bold mb-3 pb-1 border-b-2" style={{ borderColor: themeSettings.primaryColor, color: themeSettings.primaryColor }}>
 {t.certificates}
 

@@ -1,31 +1,31 @@
 export default function sitemap() {
   return [
     {
-      url: 'https://servicecv.edu-web.fr',
+      url: 'https://cv.logicstack.tech',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: 'https://servicecv.edu-web.fr/privacy',
+      url: 'https://cv.logicstack.tech/privacy',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,
     },
     {
-      url: 'https://servicecv.edu-web.fr/terms',
+      url: 'https://cv.logicstack.tech/terms',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,
     },
     {
-      url: 'https://servicecv.edu-web.fr/cookies',
+      url: 'https://cv.logicstack.tech/cookies',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,
     },
     {
-      url: 'https://servicecv.edu-web.fr/mentions-legales',
+      url: 'https://cv.logicstack.tech/mentions-legales',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,

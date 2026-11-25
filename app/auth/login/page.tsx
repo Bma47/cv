@@ -3,7 +3,6 @@
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,26 +28,30 @@ function LoginContent() {
   const lang = searchParams.get('lang') === 'en' ? 'en' : 'ar'
   const isEn = lang === 'en'
 
-  const supabase = createClient()
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
 
-    if (error) {
+      if (!response.ok) {
+        setError(isEn ? 'Incorrect email or password' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
+        setIsLoading(false)
+        return
+      }
+
+      router.push(`/builder?lang=${lang}`)
+      router.refresh()
+    } catch {
       setError(isEn ? 'Incorrect email or password' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
       setIsLoading(false)
-      return
     }
-
-    router.push(`/builder?lang=${lang}`)
-    router.refresh()
   }
 
   return (
