@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Noto_Kufi_Arabic, Tajawal, Cairo, Amiri, Almarai } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const notoKufiArabic = Noto_Kufi_Arabic({ 
@@ -93,7 +92,6 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased bg-background" suppressHydrationWarning>
         {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )

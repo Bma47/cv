@@ -77,8 +77,8 @@ function SignUpContent() {
       router.refresh()
     } catch {
       setError(isEn
-        ? 'Could not connect to the local database'
-        : 'تعذر الاتصال بقاعدة البيانات المحلية')
+        ? 'Could not connect to the server'
+        : 'تعذر الاتصال بالخادم')
       setIsLoading(false)
     }
   }

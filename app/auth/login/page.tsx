@@ -49,7 +49,7 @@ function LoginContent() {
       router.push(`/builder?lang=${lang}`)
       router.refresh()
     } catch {
-      setError(isEn ? 'Incorrect email or password' : 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
+      setError(isEn ? 'Could not connect to the server' : 'تعذر الاتصال بالخادم')
       setIsLoading(false)
     }
   }
