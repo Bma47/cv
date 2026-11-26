@@ -20,9 +20,14 @@ The app supports PostgreSQL and MariaDB. Select the driver with `DB_DRIVER`.
 ## Hostinger MariaDB
 
 1. Create a MariaDB database and user in hPanel.
-2. Set `DB_DRIVER=mysql` and configure `MYSQL_HOST`, `MYSQL_PORT`,
-   `MYSQL_DATABASE`, `MYSQL_USER`, and `MYSQL_PASSWORD` in the Node.js Web App
-   environment settings. Use the database host shown by Hostinger.
+2. Configure `MYSQL_HOST=127.0.0.1`, `MYSQL_PORT=3306`, `MYSQL_DATABASE`,
+   `MYSQL_USER`, and `MYSQL_PASSWORD` in the Node.js Web App environment
+   settings, and set `DB_DRIVER=mysql`. The Hostinger-style `DB_HOST`,
+   `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` aliases are also accepted;
+   if `DB_DRIVER` is omitted, the app selects MySQL when `DB_NAME` is present.
+   For an app running on Hostinger, use `127.0.0.1` as the
+   database host. The `srv...hstgr.io` hostname is for remote connections from
+   outside Hostinger, such as migrating data from your computer.
 3. Import `schema.mariadb.sql` into that database through phpMyAdmin.
 4. To copy accounts and CV records from local PostgreSQL, configure Hostinger's
    remote MySQL access and run `npm run db:migrate:mariadb`. The script refuses

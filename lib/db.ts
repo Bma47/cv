@@ -10,7 +10,11 @@ const globalForDb = globalThis as typeof globalThis & {
 }
 
 function getDriver(): DatabaseDriver {
-  const driver = process.env.DB_DRIVER ?? 'postgres'
+  // Hostinger commonly provides DB_HOST/DB_NAME/DB_USER/DB_PASSWORD. Treat
+  // those settings as MySQL unless the caller explicitly selects a driver.
+  const configuredDriver = process.env.DB_DRIVER?.trim().toLowerCase()
+  const driver = configuredDriver ||
+    (process.env.MYSQL_DATABASE || process.env.DB_NAME ? 'mysql' : 'postgres')
   if (driver !== 'postgres' && driver !== 'mysql') {
     throw new Error('DB_DRIVER must be either postgres or mysql')
   }
@@ -39,17 +43,23 @@ function getPostgresPool() {
 }
 
 function getMySQLPool() {
-  if (!process.env.MYSQL_DATABASE || !process.env.MYSQL_USER || !process.env.MYSQL_PASSWORD) {
-    throw new Error('MYSQL_DATABASE, MYSQL_USER, and MYSQL_PASSWORD must be configured')
+  const database = process.env.MYSQL_DATABASE ?? process.env.DB_NAME
+  const user = process.env.MYSQL_USER ?? process.env.DB_USER
+  const password = process.env.MYSQL_PASSWORD ?? process.env.DB_PASSWORD
+
+  if (!database || !user || !password) {
+    throw new Error(
+      'For MySQL, configure MYSQL_DATABASE/MYSQL_USER/MYSQL_PASSWORD or DB_NAME/DB_USER/DB_PASSWORD',
+    )
   }
 
   if (!globalForDb.mysqlPool) {
     globalForDb.mysqlPool = createPool({
-      host: process.env.MYSQL_HOST ?? '127.0.0.1',
-      port: Number(process.env.MYSQL_PORT ?? 3306),
-      database: process.env.MYSQL_DATABASE,
-      user: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
+      host: process.env.MYSQL_HOST ?? process.env.DB_HOST ?? '127.0.0.1',
+      port: Number(process.env.MYSQL_PORT ?? process.env.DB_PORT ?? 3306),
+      database,
+      user,
+      password,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
